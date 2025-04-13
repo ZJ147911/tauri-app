@@ -15,10 +15,13 @@ jobs:
         include:
           - platform: "macos-latest"
             args: "--target universal-apple-darwin"
+            package_manager: "pnpm"
           - platform: "ubuntu-latest"
             args: "--target x86_64-unknown-linux-gnu"
+            package_manager: "pnpm"
           - platform: "windows-latest"
             args: "--target x86_64-pc-windows-msvc"
+            package_manager: "pnpm"
 
     runs-on: ${{ matrix.platform }}
     env:
@@ -44,16 +47,21 @@ jobs:
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || matrix.platform == 'ubuntu-latest' && 'x86_64-unknown-linux-gnu' || matrix.platform == 'windows-latest' && 'x86_64-pc-windows-msvc' || '' }}
 
-      - name: cache yarn dependencies
+      - name: install pnpm
+        if: matrix.package_manager == 'pnpm'
+        run: |
+          npm install -g pnpm
+
+      - name: cache pnpm dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.yarn-cache
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-pnpm-
 
       - name: install frontend dependencies
-        run: yarn install
+        run: pnpm install
 
       - name: import and verify Apple Developer Certificate
         if: matrix.platform == 'macos-latest'
@@ -84,3 +92,4 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+          beforeBuildCommand: ${{ matrix.package_manager }} build
