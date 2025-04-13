@@ -45,13 +45,15 @@ jobs:
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || matrix.platform == 'ubuntu-latest' && 'x86_64-unknown-linux-gnu' || matrix.platform == 'windows-latest' && 'x86_64-pc-windows-msvc' || '' }}
 
-      - name: install frontend dependencies
+      - name: cache yarn dependencies
         uses: actions/cache@v3
         with:
           path: ~/.yarn-cache
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
+
+      - name: install frontend dependencies
         run: yarn install
 
       - name: import and verify Apple Developer Certificate
