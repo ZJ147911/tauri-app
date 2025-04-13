@@ -30,7 +30,6 @@ jobs:
       APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
       APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
 
     steps:
       - uses: actions/checkout@v4
@@ -70,6 +69,11 @@ jobs:
           CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
           echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
           echo "Certificate imported and verified."
+
+      - name: set APPLE_SIGNING_IDENTITY for macOS
+        if: matrix.platform == 'macos-latest'
+        run: |
+          echo "APPLE_SIGNING_IDENTITY=$CERT_ID" >> $GITHUB_ENV
 
       - name: build and publish
         uses: tauri-apps/tauri-action@v0
